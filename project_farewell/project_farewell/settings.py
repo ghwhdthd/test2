@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
-import os
+import os 
+import dj_databae_url
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +23,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-zs5n0-#4s5=q=%brklijq2g3pnbb4hiy%jwrd-1+o!gpd&g2_i'
-
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY', 'django-insecure-zs5n0-#4s5=q=%brklijq2g3pnbb4hiy%jwrd-1+o!gpd&g2_i')     # 1. secret key를 환경변수로 설정
+                                                                                            # 2. requirements 파일 만들기             
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = (os.environ.get('DEBUG','True') != 'False')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -45,6 +48,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -136,3 +140,28 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage' # django-storages s3 미디어파일 업로드를 위해 
+
+
+
+#secret_file = os.path.join(BASE_DIR, 'secrets.json')
+#with open(secret_file) as f:
+#    secrets = json.loads(f.read())
+
+#def get_secret(setting, secrets=secrets):
+#    try:
+#      return secrets[setting]
+#      except KeyError:
+#        error_msg = "Set the {} environment variable".format(setting)
+#        raise ImproperlyConfigured(error_msg)
+
+#AWS
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME ='farewell-bucket'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_REGION_NAME ='ap-northeast-2'
+
+db_from_env = dj_databae_url.config(conn_max_age=500)
+DATABASES['default'].update(db_from_env)
